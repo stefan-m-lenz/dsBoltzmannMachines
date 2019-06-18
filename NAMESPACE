@@ -1,1 +1,2 @@
-exportPattern("^[[:alpha:]]+")
+export("monitored_fitrbmDS")
+importFrom("JuliaConnectoR", "juliaUsing")

@@ -1,7 +1,13 @@
-monitored_fitrbmDS <- function(newobj = 'dbm', ...) {
-  trainingresult <- monitored_fitdbm(...)
-  monitoringresult <- trainingresult[[1]]
-  dbm <- trainingresult[[2]]
-  assign(newobj, dbm)
-  return(monitoringresult)
+.onLoad <- function(libname, pkgname) {
+   juliaUsing("BoltzmannMachines")
+}
+
+
+monitored_fitrbmDS <- function(newobj = 'rbm', x, ...) {
+   # trainingresult <- monitored_fitrbm(x, ...)
+   # monitoringresult <- trainingresult[[1]]
+   # rbm <- trainingresult[[2]]
+   # assign(newobj, rbm)
+   # return(monitoringresult)
+   return(c(x, list(...)))
 }
