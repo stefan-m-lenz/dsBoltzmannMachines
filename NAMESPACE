@@ -1,3 +1,5 @@
 export("monitored_fitrbmDS")
+export("setJuliaSeedDS")
+export("splitdataDS")
 importFrom("JuliaConnectoR", "juliaUsing")
 importFrom("JuliaConnectoR", "juliaExpr")

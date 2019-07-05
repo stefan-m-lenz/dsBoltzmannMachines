@@ -34,8 +34,12 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
    if (!is.null(batchsize)) {
       batchsize <- as.integer(batchsize)
    }
-   # TODO rbmtype
-   # TODO startrbm
+   if (!is.null(startrbm)) {
+      startrbm <- eval(parse(text=startrbm))
+   }
+   if(!is.null(rbmtype)) {
+      rbmtype <- eval(parse(text=rbmtype))
+   }
 
    # Avoid passing NULL arguments to Julia
    # Collect all the keyword arguments in a list ...
@@ -61,7 +65,7 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
 
    monitoringresult <- trainingresult[[1]]
    rbm <- trainingresult[[2]]
-   assign(newobj, rbm)
+   assign(newobj, rbm, envir = .GlobalEnv)
 
    if (getOption("datashield.shareBoltzmannMachines", default = FALSE)) {
       return(list(monitoringresult, rbm))
@@ -69,3 +73,14 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
       return(monitoringresult)
    }
 }
+
+
+splitdataDS <- function() {
+
+}
+
+setJuliaSeedDS <- function(seed) {
+   juliaLet("using Random; Random.seed!(seed)", seed = as.integer(seed))
+}
+
+
