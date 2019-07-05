@@ -4,7 +4,9 @@
 
 
 monitored_fitrbmDS <- function(newobj = 'rbm',
-                               data = "D") {
+                               data = "D",
+                               monitoringdata = NULL,
+                               learningrate = NULL) {
 
    x <- as.matrix(eval(parse(text=data)))
 
@@ -15,5 +17,10 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
    monitoringresult <- trainingresult[[1]]
    rbm <- trainingresult[[2]]
    assign(newobj, rbm)
-   return(monitoringresult)
+
+   if (getOption("datashield.shareBoltzmannMachines", default = FALSE)) {
+      return(list(monitoringresult, rbm))
+   } else {
+      return(monitoringresult)
+   }
 }
