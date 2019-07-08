@@ -76,8 +76,10 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
 
 
 splitdataDS <- function(data, ratio, newobj1, newobj2) {
-
-   # TODO # assign(newobj, data2, envir = .GlobalEnv)
+   d1_d2 <- splitdata(as.matrix(eval(parse(text=data))), as.numeric(ratio))
+   assign(newobj1, d1_d2[[1]], envir = .GlobalEnv)
+   assign(newobj2, d1_d2[[2]], envir = .GlobalEnv)
+   return()
 }
 
 setJuliaSeedDS <- function(seed) {
