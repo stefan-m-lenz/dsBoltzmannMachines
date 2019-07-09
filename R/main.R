@@ -3,8 +3,13 @@
 }
 
 
+RBM_MONITORING_OPTS <- list("reconstructionerror" = juliaExpr("monitorreconstructionerror!"),
+                            "exactloglikelihood" = juliaExpr("monitorexactloglikelihood!"),
+                            "loglikelihood" = juliaExpr("monitorloglikelihood!"))
+
 monitored_fitrbmDS <- function(newobj = 'rbm',
                                data = "D",
+                               monitoring = "reconstructionerror",
                                monitoringdata = NULL,
                                nhidden = NULL,
                                epochs = NULL,
@@ -19,6 +24,16 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
                                startrbm = NULL) {
 
    x <- as.matrix(eval(parse(text=data)))
+
+   if (is.null(monitoring)) {
+      monitoring <- juliaExpr("(x...) -> nothing")
+   } else {
+      monitoring <- RBM_MONITORING_OPTS[[monitoring]]
+      if (is.null(monitoring)) {
+         error("Invalid monitoring argument")
+      }
+   }
+
    if (!is.null(monitoringdata)) {
       monitoringdata <- as.list(unlist(strsplit(monitoringdata, split = ",")))
       monitoringdatalabels <- monitoringdata
@@ -53,7 +68,7 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
 
    # Avoid passing NULL arguments to Julia
    # Collect all the keyword arguments in a list ...
-   kwargs <- list(monitoring = juliaExpr("monitorreconstructionerror!"),
+   kwargs <- list(monitoring = monitoring,
                   monitoringdata = monitoringdata,
                   nhidden = nhidden,
                   epochs = epochs,
