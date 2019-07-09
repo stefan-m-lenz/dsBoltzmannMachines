@@ -19,6 +19,16 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
                                startrbm = NULL) {
 
    x <- as.matrix(eval(parse(text=data)))
+   if (!is.null(monitoringdata)) {
+      monitoringdata <- as.list(unlist(strsplit(monitoringdata, split = ",")))
+      monitoringdatalabels <- monitoringdata
+      monitoringdata <- lapply(monitoringdata, function(x) {
+         eval(parse(text = x))
+      })
+      monitoringdata <- juliaLet("DataDict(zip(keys, values))",
+                                 keys = monitoringdatalabels,
+                                 values = monitoringdata)
+   }
    if (!is.null(epochs)) {
       epochs <- as.integer(epochs)
    }
@@ -37,7 +47,7 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
    if (!is.null(startrbm)) {
       startrbm <- eval(parse(text=startrbm))
    }
-   if(!is.null(rbmtype)) {
+   if (!is.null(rbmtype)) {
       rbmtype <- eval(parse(text=rbmtype))
    }
 
