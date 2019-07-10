@@ -25,12 +25,20 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
 
    x <- as.matrix(eval(parse(text=data)))
 
+   minRequiredTrainingSamples <- getOption("datashield.BoltzmannMachines.privacyLevel", default = 20)
+   if (is.character(minRequiredTrainingSamples)) {
+      minRequiredTrainingSamples <- as.numeric(minRequiredTrainingSamples)
+   }
+   if (nrow(x) < minRequiredTrainingSamples) {
+      stop('Too few samples in data (see DataSHIELD option "datashield.BoltzmannMachines.privacyLevel")')
+   }
+
    if (is.null(monitoring)) {
       monitoring <- juliaExpr("(x...) -> nothing")
    } else {
       monitoring <- RBM_MONITORING_OPTS[[monitoring]]
       if (is.null(monitoring)) {
-         error("Invalid monitoring argument")
+         stop("Invalid monitoring argument")
       }
    }
 
@@ -44,6 +52,7 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
                                  keys = monitoringdatalabels,
                                  values = monitoringdata)
    }
+
    if (!is.null(epochs)) {
       epochs <- as.integer(epochs)
    }
@@ -82,7 +91,7 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
                   rbmtype = rbmtype,
                   startrbm = startrbm)
 
-   # to filter out the null arguments.
+   # ... to be able to filter out all the null arguments.
    kwargs <- Filter(Negate(is.null), kwargs)
    # Then the call can be assembled and evaluated.
    monitoredfitCall <- as.call(c(list(monitored_fitrbm, x), kwargs))
@@ -92,7 +101,7 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
    rbm <- trainingresult[[2]]
    assign(newobj, rbm, envir = .GlobalEnv)
 
-   if (getOption("datashield.shareBoltzmannMachines", default = FALSE)) {
+   if (getOption("datashield.BoltzmannMachines.shareModels", default = FALSE)) {
       return(list(monitoringresult, rbm))
    } else {
       return(monitoringresult)
