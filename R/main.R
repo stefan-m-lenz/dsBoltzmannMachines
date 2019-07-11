@@ -2,10 +2,80 @@
    juliaUsing("BoltzmannMachines")
 }
 
+decodeNumVec <- function(x) {
+   as.numeric(unlist(strsplit(x, split= ",")))
+}
 
 RBM_MONITORING_OPTS <- list("reconstructionerror" = juliaExpr("monitorreconstructionerror!"),
                             "exactloglikelihood" = juliaExpr("monitorexactloglikelihood!"),
                             "loglikelihood" = juliaExpr("monitorloglikelihood!"))
+
+
+#' Creates a call to a (Julia) function, passing only the non-null arguments as
+#' key-value arguments
+callWithNonNullKwargs <- function(fun, args, kwargs) {
+   if (!is.list(args)) {
+      args <- list(args)
+   }
+
+   # Avoid passing NULL arguments to Julia
+   # Collect all the keyword arguments in the list kwargs...
+   # ... to be able to filter out all the null arguments.
+   kwargs <- Filter(Negate(is.null), kwargs)
+   # Then the call can be assembled and evaluated.
+   cally <- as.call(c(fun, args, kwargs))
+   return(eval(cally))
+}
+
+
+asJuliaIntArgOrNull <- function(x) {
+   if (is.null(x)) {
+      return(NULL)
+   } else {
+      return(as.integer(x))
+   }
+}
+
+asJuliaFloat64ArgOrNull <- function(x) {
+   if (is.null(x)) {
+      return(NULL)
+   } else {
+      return(as.numeric(x))
+   }
+}
+
+asJuliaFloat64ArrayArgOrNull <- function(x) {
+   if (is.null(x)) {
+      return(NULL)
+   } else {
+      return(as.numeric(unlist(strsplit(x, split= ","))))
+   }
+}
+
+asJuliaIntArrayArgOrNull <- function(x) {
+   if (is.null(x)) {
+      return(NULL)
+   } else {
+      return(as.integer(unlist(strsplit(x, split= ","))))
+   }
+}
+
+asJuliaBoolArgOrNull <- function(x) {
+   if (is.null(x)) {
+      return(NULL)
+   } else {
+      return(as.logical(x))
+   }
+}
+
+asRObjectOrNull <- function(x) {
+   if (is.null(x)) {
+      return(NULL)
+   } else {
+      return(eval(parse(text = x)))
+   }
+}
+
 
 monitored_fitrbmDS <- function(newobj = 'rbm',
                                data = "D",
@@ -53,30 +123,14 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
                                  values = monitoringdata)
    }
 
-   if (!is.null(epochs)) {
-      epochs <- as.integer(epochs)
-   }
-   if (!is.null(nhidden)) {
-      nhidden <- as.integer(nhidden)
-   }
-   if (!is.null(learningrates)) {
-      learningrates <- as.numeric(unlist(strsplit(learningrates, split=",")))
-   }
-   if (!is.null(cdsteps)) {
-      cdsteps <- as.integer(cdsteps)
-   }
-   if (!is.null(batchsize)) {
-      batchsize <- as.integer(batchsize)
-   }
-   if (!is.null(startrbm)) {
-      startrbm <- eval(parse(text=startrbm))
-   }
-   if (!is.null(rbmtype)) {
-      rbmtype <- eval(parse(text=rbmtype))
-   }
+   epochs <- asJuliaIntArgOrNull(epochs)
+   nhidden <- asJuliaIntArgOrNull(nhidden)
+   learningrates <- asJuliaFloat64ArrayArgOrNull(learningrates)
+   cdsteps <- asJuliaIntArgOrNull(cdsteps)
+   batchsize <- asJuliaIntArgOrNull(batchsize)
+   startrbm <- asRObjectOrNull(startrbm)
+   rbmtype <- asRObjectOrNull(rbmtype)
 
-   # Avoid passing NULL arguments to Julia
-   # Collect all the keyword arguments in a list ...
    kwargs <- list(monitoring = monitoring,
                   monitoringdata = monitoringdata,
                   nhidden = nhidden,
@@ -91,12 +145,7 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
                   rbmtype = rbmtype,
                   startrbm = startrbm)
 
-   # ... to be able to filter out all the null arguments.
-   kwargs <- Filter(Negate(is.null), kwargs)
-   # Then the call can be assembled and evaluated.
-   monitoredfitCall <- as.call(c(list(monitored_fitrbm, x), kwargs))
-   trainingresult <- eval(monitoredfitCall)
-
+   trainingresult <- callWithNonNullKwargs(monitored_fitrbm, x, kwargs)
    monitoringresult <- trainingresult[[1]]
    rbm <- trainingresult[[2]]
    assign(newobj, rbm, envir = .GlobalEnv)
@@ -116,8 +165,40 @@ splitdataDS <- function(data, ratio, newobj1, newobj2) {
    return()
 }
 
+
 setJuliaSeedDS <- function(seed) {
    juliaLet("using Random; Random.seed!(seed)", seed = as.integer(seed))
+}
+
+
+samplesDS <- function(bm, nsamples,
+                      burnin = NULL,
+                      conditionIndex = NULL,
+                      conditionValue = NULL,
+                      samplelast = NULL) {
+
+   bm <- eval(parse(text = bm))
+   nsamples <- as.integer(nsamples)
+   burnin <- asJuliaIntArgOrNull(burnin)
+   samplelast <- asJuliaBoolArgOrNull(samplelast)
+
+   if (is.null(conditionIndex)) {
+      conditions <- NULL
+   } else {
+      conditionIndex <- as.integer(decodeNumVec(conditionIndex))
+      conditionValue <- decodeNumVec(conditionValue)
+      if (length(conditionIndex) != length(conditionValue)) {
+         stop("conditionIndex and conditionValue must have same length.")
+      }
+      conditions <- juliaLet("[k => v for (k, v) in zip(x, y)]",
+                             x = conditionIndex, y = conditionValue)
+   }
+
+   kwargs <- list(burnin = burnin,
+                  conditions = conditions,
+                  samplelast = samplelast)
+
+   return(callWithNonNullKwargs(samples, list(bm, nsamples), kwargs))
 }
 
 

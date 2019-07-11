@@ -10,4 +10,4 @@ License: MIT
 Depends: JuliaConnectoR
 Encoding: UTF-8
 LazyData: true
-AggregateMethods: monitored_fitrbmDS, splitdataDS
+AggregateMethods: monitored_fitrbmDS, splitdataDS, samplesDS
