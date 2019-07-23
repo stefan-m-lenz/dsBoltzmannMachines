@@ -1,80 +1,16 @@
-.onLoad <- function(libname, pkgname) {
-   juliaUsing("BoltzmannMachines")
-}
 
-decodeNumVec <- function(x) {
-   as.numeric(unlist(strsplit(x, split= ",")))
+# allows lazy connection to Julia
+pkgLocal <- new.env(parent = emptyenv())
+requiresJuliaPkgBoltzmannMachines <- function() {
+   if (is.null(pkgLocal$BoltzmannMachinesLoaded)) {
+      juliaUsing("BoltzmannMachines")
+      pkgLocal$BoltzmannMachinesLoaded <- TRUE
+   }
 }
 
 RBM_MONITORING_OPTS <- list("reconstructionerror" = juliaExpr("monitorreconstructionerror!"),
                             "exactloglikelihood" = juliaExpr("monitorexactloglikelihood!"),
                             "loglikelihood" = juliaExpr("monitorloglikelihood!"))
-
-
-#' Creates a call to a (Julia) function, passing only the non-null arguments as
-#' key-value arguments
-callWithNonNullKwargs <- function(fun, args, kwargs) {
-   if (!is.list(args)) {
-      args <- list(args)
-   }
-
-   # Avoid passing NULL arguments to Julia
-   # Collect all the keyword arguments in the list kwargs...
-   # ... to be able to filter out all the null arguments.
-   kwargs <- Filter(Negate(is.null), kwargs)
-   # Then the call can be assembled and evaluated.
-   cally <- as.call(c(fun, args, kwargs))
-   return(eval(cally))
-}
-
-
-asJuliaIntArgOrNull <- function(x) {
-   if (is.null(x)) {
-      return(NULL)
-   } else {
-      return(as.integer(x))
-   }
-}
-
-asJuliaFloat64ArgOrNull <- function(x) {
-   if (is.null(x)) {
-      return(NULL)
-   } else {
-      return(as.numeric(x))
-   }
-}
-
-asJuliaFloat64ArrayArgOrNull <- function(x) {
-   if (is.null(x)) {
-      return(NULL)
-   } else {
-      return(as.numeric(unlist(strsplit(x, split= ","))))
-   }
-}
-
-asJuliaIntArrayArgOrNull <- function(x) {
-   if (is.null(x)) {
-      return(NULL)
-   } else {
-      return(as.integer(unlist(strsplit(x, split= ","))))
-   }
-}
-
-asJuliaBoolArgOrNull <- function(x) {
-   if (is.null(x)) {
-      return(NULL)
-   } else {
-      return(as.logical(x))
-   }
-}
-
-asRObjectOrNull <- function(x) {
-   if (is.null(x)) {
-      return(NULL)
-   } else {
-      return(eval(parse(text = x)))
-   }
-}
 
 
 monitored_fitrbmDS <- function(newobj = 'rbm',
@@ -93,6 +29,8 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
                                rbmtype = NULL,
                                startrbm = NULL) {
 
+   requiresJuliaPkgBoltzmannMachines()
+
    x <- as.matrix(eval(parse(text=data)))
 
    minRequiredTrainingSamples <- getOption("datashield.BoltzmannMachines.privacyLevel", default = 20)
@@ -106,6 +44,8 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
    if (is.null(monitoring)) {
       monitoring <- juliaExpr("(x...) -> nothing")
    } else {
+      #monitoring <- unlist(strsplit(x, split= ","))
+      #for (m in monitoring) {}
       monitoring <- RBM_MONITORING_OPTS[[monitoring]]
       if (is.null(monitoring)) {
          stop("Invalid monitoring argument")
@@ -159,6 +99,7 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
 
 
 splitdataDS <- function(data, ratio, newobj1, newobj2) {
+   requiresJuliaPkgBoltzmannMachines()
    d1_d2 <- splitdata(as.matrix(eval(parse(text=data))), as.numeric(ratio))
    assign(newobj1, d1_d2[[1]], envir = .GlobalEnv)
    assign(newobj2, d1_d2[[2]], envir = .GlobalEnv)
@@ -167,6 +108,7 @@ splitdataDS <- function(data, ratio, newobj1, newobj2) {
 
 
 setJuliaSeedDS <- function(seed) {
+   requiresJuliaPkgBoltzmannMachines()
    juliaLet("using Random; Random.seed!(seed)", seed = as.integer(seed))
 }
 
@@ -176,6 +118,8 @@ samplesDS <- function(bm, nsamples,
                       conditionIndex = NULL,
                       conditionValue = NULL,
                       samplelast = NULL) {
+
+   requiresJuliaPkgBoltzmannMachines()
 
    bm <- eval(parse(text = bm))
    nsamples <- as.integer(nsamples)
@@ -199,6 +143,38 @@ samplesDS <- function(bm, nsamples,
                   samplelast = samplelast)
 
    return(callWithNonNullKwargs(samples, list(bm, nsamples), kwargs))
+}
+
+
+defineLayerDS <- function(epochs = NULL,
+                           learningrate = NULL,
+                           learningrates = NULL,
+                           sdlearningrate = NULL,
+                           sdlearningrates = NULL,
+                           categories = NULL,
+                           monitoring = NULL,
+                           rbmtype = NULL,
+                           nhidden = NULL,
+                           nvisible = NULL,
+                           batchsize = NULL,
+                           pcd = NULL,
+                           cdsteps = NULL,
+                           startrbm = NULL) {
+
+   return(list(epochs = epochs,
+               learningrate = learningrate,
+               learningrates = learningrates,
+               sdlearningrate = sdlearningrate,
+               sdlearningrates = sdlearningrates,
+               categories = categories,
+               monitoring = monitoring,
+               rbmtype = rbmtype,
+               nhidden = nhidden,
+               nvisible = nvisible,
+               batchsize = batchsize,
+               pcd = pcd,
+               cdsteps = cdsteps,
+               startrbm = startrbm))
 }
 
 
