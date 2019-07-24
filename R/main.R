@@ -38,19 +38,10 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
       minRequiredTrainingSamples <- as.numeric(minRequiredTrainingSamples)
    }
    if (nrow(x) < minRequiredTrainingSamples) {
-      stop('Too few samples in data (see DataSHIELD option "datashield.BoltzmannMachines.privacyLevel")')
+      stop('Too few samples - see option "datashield.BoltzmannMachines.privacyLevel"')
    }
 
-   if (is.null(monitoring)) {
-      monitoring <- juliaExpr("(x...) -> nothing")
-   } else {
-      #monitoring <- unlist(strsplit(x, split= ","))
-      #for (m in monitoring) {}
-      monitoring <- RBM_MONITORING_OPTS[[monitoring]]
-      if (is.null(monitoring)) {
-         stop("Invalid monitoring argument")
-      }
-   }
+   monitoring <- asMonitoringArg(monitoring, RBM_MONITORING_OPTS)
 
    if (!is.null(monitoringdata)) {
       monitoringdata <- as.list(unlist(strsplit(monitoringdata, split = ",")))
@@ -110,6 +101,7 @@ splitdataDS <- function(data, ratio, newobj1, newobj2) {
 setJuliaSeedDS <- function(seed) {
    requiresJuliaPkgBoltzmannMachines()
    juliaLet("using Random; Random.seed!(seed)", seed = as.integer(seed))
+   return()
 }
 
 
@@ -146,35 +138,75 @@ samplesDS <- function(bm, nsamples,
 }
 
 
-defineLayerDS <- function(epochs = NULL,
-                           learningrate = NULL,
-                           learningrates = NULL,
-                           sdlearningrate = NULL,
-                           sdlearningrates = NULL,
-                           categories = NULL,
-                           monitoring = NULL,
-                           rbmtype = NULL,
-                           nhidden = NULL,
-                           nvisible = NULL,
-                           batchsize = NULL,
-                           pcd = NULL,
-                           cdsteps = NULL,
-                           startrbm = NULL) {
+stackrbmsDS <- function(data,
+                        nhiddens = NULL,
+                        epochs = NULL,
+                        predbm = NULL,
+                        samplehidden = NULL,
+                        learningrate = NULL,
+                        batchsize = NULL,
+                        trainlayers = NULL,
+                        monitoringdata = NULL) {
 
-   return(list(epochs = epochs,
-               learningrate = learningrate,
-               learningrates = learningrates,
-               sdlearningrate = sdlearningrate,
-               sdlearningrates = sdlearningrates,
-               categories = categories,
-               monitoring = monitoring,
-               rbmtype = rbmtype,
-               nhidden = nhidden,
-               nvisible = nvisible,
-               batchsize = batchsize,
-               pcd = pcd,
-               cdsteps = cdsteps,
-               startrbm = startrbm))
+   requiresJuliaPkgBoltzmannMachines()
+
+   x <- as.matrix(eval(parse(text=data)))
+   nhiddens <- asJuliaIntArrayArgOrNull(nhiddens)
+   epochs <- asJuliaIntArgOrNull(epochs)
+   predbm <- asJuliaBoolArgOrNull(predbm)
+   samplehidden <- asJuliaBoolArgOrNull(samplehidden)
+   learningrate <- asJuliaFloat64ArgOrNull(learningrate)
+   batchsize <- asJuliaIntArgOrNull(batchsize)
+   trainlayers <- NULL
+
+   kwargs <- list(nhiddens = nhiddens,
+                  epochs = epochs,
+                  predbm = predbm,
+                  samplehidden = samplehidden,
+                  learningrate = learningrate,
+                  batchsize = batchsize,
+                  trainlayers = trainlayers,
+                  # TODOmonitoringdata = NULL
+                  )
+
+   stackrbms()
+}
+
+
+defineLayerDS <- function(newobj, epochs = NULL,
+                          learningrate = NULL,
+                          learningrates = NULL,
+                          sdlearningrate = NULL,
+                          sdlearningrates = NULL,
+                          categories = NULL,
+                          rbmtype = NULL,
+                          nhidden = NULL,
+                          nvisible = NULL,
+                          batchsize = NULL,
+                          pcd = NULL,
+                          cdsteps = NULL,
+                          startrbm = NULL) {
+
+   requiresJuliaPkgBoltzmannMachines()
+
+   kwargs <- list(epochs = asJuliaIntArgOrNull(epochs),
+                  learningrate = asJuliaFloat64ArgOrNull(learningrate),
+                  learningrates = asJuliaFloat64ArrayArgOrNull(learningrates),
+                  sdlearningrate = asJuliaFloat64ArgOrNull(sdlearningrate),
+                  sdlearningrates = asJuliaFloat64ArrayArgOrNull(sdlearningrates),
+                  categories = asJuliaIntArrayArgOrNull(categories),
+                  rbmtype = asRObjectOrNull(rbmtype),
+                  nhidden = asJuliaIntArgOrNull(nhidden),
+                  nvisible = asJuliaIntArgOrNull(nvisible),
+                  batchsize = asJuliaIntArgOrNull(batchsize),
+                  pcd = asJuliaBoolArgOrNull(pcd),
+                  cdsteps = asJuliaIntArgOrNull(cdsteps),
+                  startrbm = asRObjectOrNull(startrbm))
+
+   t <- callWithNonNullKwargs(TrainLayer, kwargs = kwargs)
+   assign(newobj, t)
+
+   return()
 }
 
 

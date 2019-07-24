@@ -6,8 +6,8 @@ decodeNumVec <- function(x) {
 
 #' Creates a call to a (Julia) function, passing only the non-null arguments as
 #' key-value arguments
-callWithNonNullKwargs <- function(fun, args, kwargs) {
-   if (!is.list(args)) {
+callWithNonNullKwargs <- function(fun, args = NULL, kwargs) {
+   if (!is.null(args) && !is.list(args)) {
       args <- list(args)
    }
 
@@ -29,6 +29,7 @@ asJuliaIntArgOrNull <- function(x) {
    }
 }
 
+
 asJuliaFloat64ArgOrNull <- function(x) {
    if (is.null(x)) {
       return(NULL)
@@ -36,6 +37,7 @@ asJuliaFloat64ArgOrNull <- function(x) {
       return(as.numeric(x))
    }
 }
+
 
 asJuliaFloat64ArrayArgOrNull <- function(x) {
    if (is.null(x)) {
@@ -45,6 +47,7 @@ asJuliaFloat64ArrayArgOrNull <- function(x) {
    }
 }
 
+
 asJuliaIntArrayArgOrNull <- function(x) {
    if (is.null(x)) {
       return(NULL)
@@ -52,6 +55,7 @@ asJuliaIntArrayArgOrNull <- function(x) {
       return(as.integer(unlist(strsplit(x, split= ","))))
    }
 }
+
 
 asJuliaBoolArgOrNull <- function(x) {
    if (is.null(x)) {
@@ -61,10 +65,28 @@ asJuliaBoolArgOrNull <- function(x) {
    }
 }
 
+
 asRObjectOrNull <- function(x) {
    if (is.null(x)) {
       return(NULL)
    } else {
       return(eval(parse(text = x)))
    }
+}
+
+
+asMonitoringArg <- function(monitoring, monitoringopts) {
+   if (is.null(monitoring)) {
+      return(juliaExpr("(x...) -> nothing"))
+   } else {
+      # TODO handle list
+      #monitoring <- unlist(strsplit(x, split= ","))
+      #for (m in monitoring) {}
+      monitoring <- monitoringopts[[monitoring]]
+      if (is.null(monitoring)) {
+         stop("Invalid monitoring argument")
+      }
+      return(monitoring)
+   }
+
 }
