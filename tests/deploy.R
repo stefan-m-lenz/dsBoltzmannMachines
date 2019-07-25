@@ -1,7 +1,12 @@
 library(opaladmin)
 
-devtools::build()
-system("bash -e tests/move.sh")
+deployDSBMs <- function () {
+   devtools::build()
+   system("bash -e tests/move.sh")
+}
+
+deployDSBMs()
+
 
 # In case of new functions:
 o <- opal.login("administrator", "password",

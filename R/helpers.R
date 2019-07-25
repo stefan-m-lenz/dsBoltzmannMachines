@@ -17,7 +17,7 @@ callWithNonNullKwargs <- function(fun, args = NULL, kwargs) {
    kwargs <- Filter(Negate(is.null), kwargs)
    # Then the call can be assembled and evaluated.
    cally <- as.call(c(fun, args, kwargs))
-   return(eval(cally))
+   return(eval(cally, envir = .GlobalEnv))
 }
 
 
@@ -66,11 +66,45 @@ asJuliaBoolArgOrNull <- function(x) {
 }
 
 
+asRObject <- function(x) {
+   if (is.null(x)) {
+      stop("Name of variable is not allowed to be NULL.")
+   } else {
+      return(eval(parse(text = x), envir = .GlobalEnv))
+   }
+}
+
+
 asRObjectOrNull <- function(x) {
    if (is.null(x)) {
       return(NULL)
    } else {
-      return(eval(parse(text = x)))
+      return(eval(parse(text = x), envir = .GlobalEnv))
+   }
+}
+
+
+asRObjectListOrNull <- function(x) {
+   if (is.null(x)) {
+      return(NULL)
+   } else {
+      return(lapply(unlist(strsplit(x, split= ",")),
+                    asRObjectOrNull))
+   }
+}
+
+
+asBMsDataDictOrNull <- function(x) {
+   if (is.null(x)) {
+      return(NULL)
+   } else {
+      monitoringdata <- as.list(unlist(strsplit(x, split = ",")))
+      monitoringdatalabels <- monitoringdata
+      monitoringdata <- lapply(monitoringdata, asRObject)
+      monitoringdata <- juliaLet("DataDict(zip(keys, values))",
+                                 keys = monitoringdatalabels,
+                                 values = monitoringdata)
+      return(monitoringdata)
    }
 }
 
@@ -88,5 +122,16 @@ asMonitoringArg <- function(monitoring, monitoringopts) {
       }
       return(monitoring)
    }
+}
 
+
+assignAndReturnMonitoredFittingResult <- function(newobj, trainingresult) {
+   monitoringresult <- trainingresult[[1]]
+   model <- trainingresult[[2]]
+   assign(newobj, model, envir = .GlobalEnv)
+   if (getOption("datashield.BoltzmannMachines.shareModels", default = FALSE)) {
+      return(list(monitoringresult, model))
+   } else {
+      return(monitoringresult)
+   }
 }

@@ -31,7 +31,7 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
 
    requiresJuliaPkgBoltzmannMachines()
 
-   x <- as.matrix(eval(parse(text=data)))
+   x <- as.matrix(asRObject(data))
 
    minRequiredTrainingSamples <- getOption("datashield.BoltzmannMachines.privacyLevel", default = 20)
    if (is.character(minRequiredTrainingSamples)) {
@@ -42,18 +42,7 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
    }
 
    monitoring <- asMonitoringArg(monitoring, RBM_MONITORING_OPTS)
-
-   if (!is.null(monitoringdata)) {
-      monitoringdata <- as.list(unlist(strsplit(monitoringdata, split = ",")))
-      monitoringdatalabels <- monitoringdata
-      monitoringdata <- lapply(monitoringdata, function(x) {
-         eval(parse(text = x))
-      })
-      monitoringdata <- juliaLet("DataDict(zip(keys, values))",
-                                 keys = monitoringdatalabels,
-                                 values = monitoringdata)
-   }
-
+   monitoringdata <- asBMsDataDictOrNull(monitoringdata)
    epochs <- asJuliaIntArgOrNull(epochs)
    nhidden <- asJuliaIntArgOrNull(nhidden)
    learningrates <- asJuliaFloat64ArrayArgOrNull(learningrates)
@@ -77,21 +66,13 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
                   startrbm = startrbm)
 
    trainingresult <- callWithNonNullKwargs(monitored_fitrbm, x, kwargs)
-   monitoringresult <- trainingresult[[1]]
-   rbm <- trainingresult[[2]]
-   assign(newobj, rbm, envir = .GlobalEnv)
-
-   if (getOption("datashield.BoltzmannMachines.shareModels", default = FALSE)) {
-      return(list(monitoringresult, rbm))
-   } else {
-      return(monitoringresult)
-   }
+   return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
 }
 
 
 splitdataDS <- function(data, ratio, newobj1, newobj2) {
    requiresJuliaPkgBoltzmannMachines()
-   d1_d2 <- splitdata(as.matrix(eval(parse(text=data))), as.numeric(ratio))
+   d1_d2 <- splitdata(as.matrix(asRObject(data)), as.numeric(ratio))
    assign(newobj1, d1_d2[[1]], envir = .GlobalEnv)
    assign(newobj2, d1_d2[[2]], envir = .GlobalEnv)
    return()
@@ -113,7 +94,7 @@ samplesDS <- function(bm, nsamples,
 
    requiresJuliaPkgBoltzmannMachines()
 
-   bm <- eval(parse(text = bm))
+   bm <- asRObject(bm)
    nsamples <- as.integer(nsamples)
    burnin <- asJuliaIntArgOrNull(burnin)
    samplelast <- asJuliaBoolArgOrNull(samplelast)
@@ -138,38 +119,43 @@ samplesDS <- function(bm, nsamples,
 }
 
 
-stackrbmsDS <- function(data,
-                        nhiddens = NULL,
-                        epochs = NULL,
-                        predbm = NULL,
-                        samplehidden = NULL,
-                        learningrate = NULL,
-                        batchsize = NULL,
-                        trainlayers = NULL,
-                        monitoringdata = NULL) {
+monitored_stackrbmsDS <- function(newobj,
+                                  data = "D",
+                                  monitoring = "reconstructionerror",
+                                  monitoringdata = data,
+                                  nhiddens = NULL,
+                                  epochs = NULL,
+                                  predbm = NULL,
+                                  samplehidden = NULL,
+                                  learningrate = NULL,
+                                  batchsize = NULL,
+                                  trainlayers = NULL) {
 
    requiresJuliaPkgBoltzmannMachines()
 
-   x <- as.matrix(eval(parse(text=data)))
+   x <- as.matrix(asRObject(data))
    nhiddens <- asJuliaIntArrayArgOrNull(nhiddens)
    epochs <- asJuliaIntArgOrNull(epochs)
    predbm <- asJuliaBoolArgOrNull(predbm)
    samplehidden <- asJuliaBoolArgOrNull(samplehidden)
    learningrate <- asJuliaFloat64ArgOrNull(learningrate)
    batchsize <- asJuliaIntArgOrNull(batchsize)
-   trainlayers <- NULL
+   trainlayers <- asRObjectListOrNull(trainlayers)
+   monitoring <- asMonitoringArg(monitoring, RBM_MONITORING_OPTS)
+   monitoringdata <- asBMsDataDictOrNull(monitoringdata)
 
-   kwargs <- list(nhiddens = nhiddens,
+   kwargs <- list(monitoring = monitoring,
+                  monitoringdata = monitoringdata,
+                  nhiddens = nhiddens,
                   epochs = epochs,
                   predbm = predbm,
                   samplehidden = samplehidden,
                   learningrate = learningrate,
                   batchsize = batchsize,
-                  trainlayers = trainlayers,
-                  # TODOmonitoringdata = NULL
-                  )
+                  trainlayers = trainlayers)
 
-   stackrbms()
+   trainingresult <- callWithNonNullKwargs(monitored_stackrbms, x, kwargs)
+   return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
 }
 
 
@@ -204,7 +190,7 @@ defineLayerDS <- function(newobj, epochs = NULL,
                   startrbm = asRObjectOrNull(startrbm))
 
    t <- callWithNonNullKwargs(TrainLayer, kwargs = kwargs)
-   assign(newobj, t)
+   assign(newobj, t, envir = .GlobalEnv)
 
    return()
 }
