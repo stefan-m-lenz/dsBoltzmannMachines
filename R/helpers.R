@@ -113,14 +113,19 @@ asMonitoringArg <- function(monitoring, monitoringopts) {
    if (is.null(monitoring)) {
       return(juliaExpr("(x...) -> nothing"))
    } else {
-      # TODO handle list
-      #monitoring <- unlist(strsplit(x, split= ","))
-      #for (m in monitoring) {}
-      monitoring <- monitoringopts[[monitoring]]
-      if (is.null(monitoring)) {
-         stop("Invalid monitoring argument")
+      monitoring <- unlist(strsplit(monitoring, split= ","))
+      monitoringarg <- monitoringopts[monitoring]
+      if (length(monitoring) != length(monitoringarg)) {
+         stop(paste("Unrecognized monitoring option:",
+                    monitoring[!(monitoring %in% names(monitoringopts))]))
       }
-      return(monitoring)
+      if (length(monitoringarg) > 1) {
+         monitoringarg <- paste0(monitoringarg, collapse = ";")
+         monitoringarg <- juliaExpr(paste0("[", monitoringarg, "]"))
+      } else {
+         monitoringarg <- monitoringarg[[1]]
+      }
+      return(monitoringarg)
    }
 }
 
