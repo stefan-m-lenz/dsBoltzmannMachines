@@ -142,3 +142,14 @@ assignAndReturnMonitoredFittingResult <- function(newobj, trainingresult) {
       return(monitoringresult)
    }
 }
+
+
+checkNumberOfSamples <- function(x) {
+   minRequiredTrainingSamples <- getOption("datashield.BoltzmannMachines.privacyLevel", default = 20)
+   if (is.character(minRequiredTrainingSamples)) {
+      minRequiredTrainingSamples <- as.numeric(minRequiredTrainingSamples)
+   }
+   if (nrow(x) < minRequiredTrainingSamples) {
+      stop('Too few samples - see option "datashield.BoltzmannMachines.privacyLevel"')
+   }
+}

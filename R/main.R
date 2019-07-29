@@ -34,38 +34,21 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
    requiresJuliaPkgBoltzmannMachines()
 
    x <- as.matrix(asRObject(data))
+   checkNumberOfSamples(x)
 
-   minRequiredTrainingSamples <- getOption("datashield.BoltzmannMachines.privacyLevel", default = 20)
-   if (is.character(minRequiredTrainingSamples)) {
-      minRequiredTrainingSamples <- as.numeric(minRequiredTrainingSamples)
-   }
-   if (nrow(x) < minRequiredTrainingSamples) {
-      stop('Too few samples - see option "datashield.BoltzmannMachines.privacyLevel"')
-   }
-
-   monitoring <- asMonitoringArg(monitoring, RBM_MONITORING_OPTS)
-   monitoringdata <- asBMsDataDictOrNull(monitoringdata)
-   epochs <- asJuliaIntArgOrNull(epochs)
-   nhidden <- asJuliaIntArgOrNull(nhidden)
-   learningrates <- asJuliaFloat64ArrayArgOrNull(learningrates)
-   cdsteps <- asJuliaIntArgOrNull(cdsteps)
-   batchsize <- asJuliaIntArgOrNull(batchsize)
-   startrbm <- asRObjectOrNull(startrbm)
-   rbmtype <- asRObjectOrNull(rbmtype)
-
-   kwargs <- list(monitoring = monitoring,
-                  monitoringdata = monitoringdata,
-                  nhidden = nhidden,
-                  epochs = epochs,
-                  upfactor = upfactor,
-                  downfactor = downfactor,
-                  learningrate = learningrate,
-                  learningrates = learningrates,
-                  pcd = pcd,
-                  cdsteps = cdsteps,
-                  batchsize = batchsize,
-                  rbmtype = rbmtype,
-                  startrbm = startrbm)
+   kwargs <- list(monitoring = asMonitoringArg(monitoring, RBM_MONITORING_OPTS),
+                  monitoringdata = asBMsDataDictOrNull(monitoringdata),
+                  nhidden = asJuliaIntArgOrNull(nhidden),
+                  epochs = asJuliaIntArgOrNull(epochs),
+                  upfactor = asJuliaFloat64ArgOrNull(upfactor),
+                  downfactor = asJuliaFloat64ArgOrNull(downfactor),
+                  learningrate = asJuliaFloat64ArgOrNull(learningrate),
+                  learningrates = asJuliaFloat64ArrayArgOrNull(learningrates),
+                  pcd = asJuliaBoolArgOrNull(pcd),
+                  cdsteps = asJuliaIntArgOrNull(cdsteps),
+                  batchsize = asJuliaIntArgOrNull(batchsize),
+                  rbmtype = asRObjectOrNull(rbmtype),
+                  startrbm = asRObjectOrNull(startrbm))
 
    trainingresult <- callWithNonNullKwargs(monitored_fitrbm, x, kwargs)
    return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
@@ -136,25 +119,17 @@ monitored_stackrbmsDS <- function(newobj,
    requiresJuliaPkgBoltzmannMachines()
 
    x <- as.matrix(asRObject(data))
-   nhiddens <- asJuliaIntArrayArgOrNull(nhiddens)
-   epochs <- asJuliaIntArgOrNull(epochs)
-   predbm <- asJuliaBoolArgOrNull(predbm)
-   samplehidden <- asJuliaBoolArgOrNull(samplehidden)
-   learningrate <- asJuliaFloat64ArgOrNull(learningrate)
-   batchsize <- asJuliaIntArgOrNull(batchsize)
-   trainlayers <- asRObjectListOrNull(trainlayers)
-   monitoring <- asMonitoringArg(monitoring, RBM_MONITORING_OPTS)
-   monitoringdata <- asBMsDataDictOrNull(monitoringdata)
+   checkNumberOfSamples(x)
 
-   kwargs <- list(monitoring = monitoring,
-                  monitoringdata = monitoringdata,
-                  nhiddens = nhiddens,
-                  epochs = epochs,
-                  predbm = predbm,
-                  samplehidden = samplehidden,
-                  learningrate = learningrate,
-                  batchsize = batchsize,
-                  trainlayers = trainlayers)
+   kwargs <- list(monitoring = asMonitoringArg(monitoring, RBM_MONITORING_OPTS),
+                  monitoringdata = asBMsDataDictOrNull(monitoringdata),
+                  nhiddens = asJuliaIntArrayArgOrNull(nhiddens),
+                  epochs = asJuliaIntArgOrNull(epochs),
+                  predbm = asJuliaBoolArgOrNull(predbm),
+                  samplehidden = asJuliaBoolArgOrNull(samplehidden),
+                  learningrate = asJuliaFloat64ArgOrNull(learningrate),
+                  batchsize = asJuliaIntArgOrNull(batchsize),
+                  trainlayers = asRObjectListOrNull(trainlayers))
 
    trainingresult <- callWithNonNullKwargs(monitored_stackrbms, x, kwargs)
    return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
@@ -181,6 +156,7 @@ monitored_fitdbmDS <- function(newobj,
 
    #tryCatch({
    x <- as.matrix(asRObject(data))
+   checkNumberOfSamples(x)
 
    kwargs <- list(monitoring = asMonitoringArg(monitoring, DBM_MONITORING_OPTS),
                   monitoringdata = asBMsDataDictOrNull(monitoringdata),
