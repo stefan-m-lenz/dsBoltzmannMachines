@@ -98,9 +98,11 @@ asBMsDataDictOrNull <- function(x) {
    if (is.null(x)) {
       return(NULL)
    } else {
+      requiresJuliaPkgBoltzmannMachines()
       monitoringdata <- as.list(unlist(strsplit(x, split = ",")))
       monitoringdatalabels <- monitoringdata
-      monitoringdata <- lapply(monitoringdata, asRObject)
+      monitoringdata <- lapply(monitoringdata,
+                               function(x) {as.matrix(asRObject(x))})
       monitoringdata <- juliaLet("DataDict(zip(keys, values))",
                                  keys = monitoringdatalabels,
                                  values = monitoringdata)
@@ -115,7 +117,7 @@ asMonitoringArg <- function(monitoring, monitoringopts) {
    } else {
       monitoring <- unlist(strsplit(monitoring, split= ","))
       monitoringarg <- monitoringopts[monitoring]
-      if (length(monitoring) != length(monitoringarg)) {
+      if (length(monitoring) != length(unlist(monitoringarg))) {
          stop(paste("Unrecognized monitoring option:",
                     monitoring[!(monitoring %in% names(monitoringopts))]))
       }

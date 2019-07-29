@@ -10,4 +10,5 @@ License: MIT
 Depends: JuliaConnectoR
 Encoding: UTF-8
 LazyData: true
-AggregateMethods: defineLayerDS, monitored_fitrbmDS, monitored_stackrbmsDS, splitdataDS, samplesDS, setJuliaSeedDS
+AggregateMethods: defineLayerDS, monitored_fitrbmDS, monitored_stackrbmsDS, monitored_fitdbmDS, 
+    splitdataDS, samplesDS, setJuliaSeedDS

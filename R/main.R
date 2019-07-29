@@ -11,12 +11,14 @@ requiresJuliaPkgBoltzmannMachines <- function() {
 RBM_MONITORING_OPTS <- list("reconstructionerror" = juliaExpr("monitorreconstructionerror!"),
                             "exactloglikelihood" = juliaExpr("monitorexactloglikelihood!"),
                             "loglikelihood" = juliaExpr("monitorloglikelihood!"))
+DBM_MONITORING_OPTS <- list("logproblowerbound" = juliaExpr("monitorlogproblowerbound!"),
+                            "exactloglikelihood" = juliaExpr("monitorexactloglikelihood!"))
 
 
 monitored_fitrbmDS <- function(newobj = 'rbm',
                                data = "D",
                                monitoring = "reconstructionerror",
-                               monitoringdata = NULL,
+                               monitoringdata = "D",
                                nhidden = NULL,
                                epochs = NULL,
                                upfactor = NULL,
@@ -156,6 +158,47 @@ monitored_stackrbmsDS <- function(newobj,
 
    trainingresult <- callWithNonNullKwargs(monitored_stackrbms, x, kwargs)
    return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
+}
+
+
+monitored_fitdbmDS <- function(newobj,
+                               data = "D",
+                               monitoring = "logproblowerbound",
+                               monitoringdata = data,
+                               monitoringpretraining = "reconstructionerror",
+                               monitoringdatapretraining = monitoringdata,
+                               nhiddens = NULL,
+                               epochs = NULL,
+                               nparticles = NULL,
+                               learningrate = NULL,
+                               learningrates = NULL,
+                               learningratepretraining = NULL,
+                               epochspretraining = NULL,
+                               batchsizepretraining = NULL,
+                               pretraining = NULL) {
+
+   requiresJuliaPkgBoltzmannMachines()
+
+   #tryCatch({
+   x <- as.matrix(asRObject(data))
+
+   kwargs <- list(monitoring = asMonitoringArg(monitoring, DBM_MONITORING_OPTS),
+                  monitoringdata = asBMsDataDictOrNull(monitoringdata),
+                  monitoringpretraining = asMonitoringArg(monitoringpretraining, RBM_MONITORING_OPTS),
+                  monitoringdatapretraining = asBMsDataDictOrNull(monitoringdatapretraining),
+                  nhiddens = asJuliaIntArrayArgOrNull(nhiddens),
+                  epochs = asJuliaIntArgOrNull(epochs),
+                  nparticles = asJuliaIntArgOrNull(nparticles),
+                  learningrate = asJuliaFloat64ArgOrNull(learningrate),
+                  learningrates = asJuliaFloat64ArrayArgOrNull(learningrates),
+                  learningratepretraining = asJuliaFloat64ArgOrNull(learningratepretraining),
+                  epochspretraining = asJuliaIntArgOrNull(epochspretraining),
+                  batchsizepretraining = asJuliaIntArgOrNull(batchsizepretraining),
+                  pretraining = asRObjectListOrNull(pretraining))
+
+   trainingresult <- callWithNonNullKwargs(monitored_fitdbm, x, kwargs)
+   return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
+   #}, error = function(e) {return(paste(e))})
 }
 
 
