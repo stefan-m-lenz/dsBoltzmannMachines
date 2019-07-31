@@ -140,23 +140,23 @@ sudo service rserver restart
 # https://wiki.linuxmuster.net/community/anwenderwiki:ssh:ssh-keys
 
 # spezifisch für JuliaConnectoR
-echo 'JULIASERVER_SOCKET_ADDRESS="localhost:11980"' >> /etc/environment
-printf "\nSys.setenv(JULIASERVER_SOCKET_ADDRESS=\"localhost:11980\")\n\n" >> /var/lib/rserver/conf/Rprofile.R
+
+#echo 'JULIASERVER_SOCKET_ADDRESS="localhost:11980"' >> /etc/environment
+#printf "\nSys.setenv(JULIASERVER_SOCKET_ADDRESS=\"localhost:11980\")\n\n" >> /var/lib/rserver/conf/Rprofile.R
+
+# Install Julia, then:
+
+# Set JULIA_BINDIR environment variable for the rserver
+BOLTZMANN_UPDATE_CMD=$(cat << 'END'
+julia -e 'using Pkg; Pkg.add(PackageSpec(name = "BoltzmannMachines", rev = "MonitoringConvenience"))'
+END
+)
+sudo su -s "/bin/bash" rserver -c "$BOLTZMANN_UPDATE_CMD"
+JULIA_BINDIR="/opt/julia/julia-1.0.4/bin/"
+echo "JULIA_BINDIR=$JULIA_BINDIR" >> /etc/environment
+printf "\nSys.setenv($JULIA_BINDIR=$JULIA_BINDIR)\n\n" >> /var/lib/rserver/conf/Rprofile.R
 sudo service rserver restart
 
-# TODO testen
-# alternativ: JULIA_BINDIR setzen. Dazu vorher Pakete installieren:
-sudo su -s "/bin/bash" rserver
-# julia starten und ausführen:
-#using Pkg; Pkg.add(PackageSpec(name = "BoltzmannMachines", rev = "master"))
 
-# TODO: noch Skripten
-# cat << EOF > install_rserver_julia_pkgs.sh
-# julia -e 'using Pkg; Pkg.add(PackageSpec(name = "BoltzmannMachines", rev = "master"))'
-# EOF
 
-# chmod +x install_rserver_julia_pkgs.sh
-# chown rserver install_rserver_julia_pkgs.sh
-
-# sudo su -s "/bin/bash" -c "/root/install_rserver_julia_pkgs.sh" rserver
 
