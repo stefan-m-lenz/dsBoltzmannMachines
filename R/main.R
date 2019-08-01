@@ -215,3 +215,13 @@ defineLayerDS <- function(newobj, epochs = NULL,
 }
 
 
+definePartitionedLayerDS <- function(newobj, parts) {
+   parts <- asRObjectListOrNull(parts)
+   if (!is.null(parts) || isempty(parts)) {
+      parts <- TrainPartitionedLayer(parts)
+   }
+   assign(newobj, parts, envir = .GlobalEnv)
+   return()
+}
+
+
