@@ -1,15 +1,17 @@
 Package: dsBoltzmannMachines
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Server side functions for Boltzmann machines in DataSHIELD
 Version: 0.1.0
 Author: Stefan Lenz
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Maintainer: Stefan Lenz <lenz@imbi.uni-freiburg.de>
+Description: The package wraps the Julia package "BoltzmannMachines" 
+    (https://github.com/stefan-m-lenz/BoltzmannMachines.jl).
+    It allows to train and use restricted and deep Boltzmann machines in DataSHIELD. 
 License: MIT
 Depends: JuliaConnectoR
 Encoding: UTF-8
 LazyData: true
 AggregateMethods: splitdataDS, samplesDS, setJuliaSeedDS,
     defineLayerDS, definePartitionedLayerDS,
-    monitored_fitrbmDS, monitored_stackrbmsDS, monitored_fitdbmDS
+    monitored_fitrbmDS, monitored_stackrbmsDS, monitored_fitdbmDS,
+    dbm2TopLatentDimsDS

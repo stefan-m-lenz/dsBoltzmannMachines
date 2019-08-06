@@ -225,3 +225,21 @@ definePartitionedLayerDS <- function(newobj, parts) {
 }
 
 
+#' If there are more than two hidden nodes, perform a PCA and return only
+#' the top two principal components.
+dbm2TopLatentDimsDS <- function(dbm, data) {
+   mf <- meanfield(asRObject(dbm), as.matrix(asRObject(data)))
+   h <- mf[[length(mf)]]
+
+   # logit transform
+   h <- -log(1 / h - 1)
+
+   if (ncol(h) > 2) {
+      comps <- prcomp(h, scale = TRUE)
+      h <- comps$x[, 1:2]
+   }
+
+   return(h)
+}
+
+
