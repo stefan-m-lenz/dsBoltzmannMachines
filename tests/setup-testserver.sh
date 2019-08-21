@@ -148,7 +148,7 @@ sudo service rserver restart
 
 # Set JULIA_BINDIR environment variable for the rserver
 BOLTZMANN_UPDATE_CMD=$(cat << 'END'
-julia -e 'using Pkg; Pkg.add(PackageSpec(name = "BoltzmannMachines", rev = "MonitoringConvenience"))'
+julia -e 'using Pkg; Pkg.add(PackageSpec(name = "BoltzmannMachines", version = "1.2"))'
 END
 )
 sudo su -s "/bin/bash" rserver -c "$BOLTZMANN_UPDATE_CMD"
