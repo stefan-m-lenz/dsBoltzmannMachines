@@ -239,6 +239,9 @@ dbm2TopLatentDimsDS <- function(dbm, data) {
       h <- comps$x[, 1:2]
    }
 
+   # random permutation of rows to increase data protection
+   h <- h[sample.int(nrow(h), replace = FALSE), ]
+
    return(h)
 }
 
