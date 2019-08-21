@@ -227,8 +227,15 @@ definePartitionedLayerDS <- function(newobj, parts) {
 
 #' If there are more than two hidden nodes, perform a PCA and return only
 #' the top two principal components.
-dbm2TopLatentDimsDS <- function(dbm, data) {
-   mf <- meanfield(asRObject(dbm), as.matrix(asRObject(data)))
+dbm2TopLatentDimsDS <- function(dbm, data, nparticles, burnin) {
+
+   dbm <- asRObject(dbm)
+   # particles <- initparticles(dbm, as.integer(nparticles))
+   # particles <- gibbssample(particles, dbm, as.integer(burnin))
+   #mf <- meanfield(asRObject(dbm), as.matrix(asRObject(data)))
+   # h <- hiddeninput(dbm[[length(dbm)]], particles[[length(particles) - 1]])
+   x <- samples(dbm, as.integer(nparticles), burnin = as.integer(burnin))
+   mf <- meanfield(dbm, x)
    h <- mf[[length(mf)]]
 
    # logit transform
