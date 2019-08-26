@@ -144,7 +144,15 @@ sudo service rserver restart
 #echo 'JULIASERVER_SOCKET_ADDRESS="localhost:11980"' >> /etc/environment
 #printf "\nSys.setenv(JULIASERVER_SOCKET_ADDRESS=\"localhost:11980\")\n\n" >> /var/lib/rserver/conf/Rprofile.R
 
-# Install Julia, then:
+# Install Julia
+JULIA_VERSION=julia-1.0.4
+wget https://julialang-s3.julialang.org/bin/linux/x64/1.0/$JULIA_VERSION-linux-x86_64.tar.gz
+tar -xzf $JULIA_VERSION-linux-x86_64.tar.gz
+rm $JULIA_VERSION-linux-x86_64.tar.gz
+mkdir /opt/julia
+mv $JULIA_VERSION /opt/julia/$JULIA_VERSION/
+ln -s /opt/julia/$JULIA_VERSION/bin/julia /usr/local/bin/julia
+
 
 # Set JULIA_BINDIR environment variable for the rserver
 BOLTZMANN_UPDATE_CMD=$(cat << 'END'
@@ -152,10 +160,12 @@ julia -e 'using Pkg; Pkg.add(PackageSpec(name = "BoltzmannMachines", version = "
 END
 )
 sudo su -s "/bin/bash" rserver -c "$BOLTZMANN_UPDATE_CMD"
-JULIA_BINDIR="/opt/julia/julia-1.0.4/bin/"
+JULIA_BINDIR="/opt/julia/$JULIA_VERSION/bin/"
 echo "JULIA_BINDIR=$JULIA_BINDIR" >> /etc/environment
-printf "\nSys.setenv($JULIA_BINDIR=$JULIA_BINDIR)\n\n" >> /var/lib/rserver/conf/Rprofile.R
+printf "\nSys.setenv(JULIA_BINDIR=$JULIA_BINDIR)\n\n" >> /var/lib/rserver/conf/Rprofile.R
 sudo service rserver restart
+
+
 
 
 
