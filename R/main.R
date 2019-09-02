@@ -246,3 +246,44 @@ dbm2TopLatentDimsDS <- function(dbm, data) {
 }
 
 
+aisParamList <- function(parallelized = NULL,
+                         ntemperatures = NULL,
+                         nparticles = NULL,
+                         burnin = NULL) {
+   list(parallelized = asJuliaBoolArgOrNull(parallelized),
+        ntemperatures = asJuliaIntArgOrNull(ntemperatures),
+        nparticles = asJuliaIntArgOrNull(nparticles),
+        burnin = asJuliaIntArgOrNull(burnin))
+}
+
+
+rbm.loglikelihoodDS <- function(rbm, data, ...) {
+   requiresJuliaPkgBoltzmannMachines()
+   kwargs <- aisParamList(...)
+   rbm <- asRObject(rbm)
+   logz <- callWithNonNullKwargs(logpartitionfunction, list(rbm), kwargs)
+   loglikelihood(rbm, as.matrix(asRObject(data)), logz)
+}
+
+
+dbm.loglikelihoodDS <- function(dbm, data, ...) {
+   requiresJuliaPkgBoltzmannMachines()
+   kwargs <- aisParamList(...)
+   callWithNonNullKwargs(loglikelihood,
+                         list(asRObject(dbm), as.matrix(asRObject(data))), kwargs)
+}
+
+
+dbm.logproblowerboundDS <- function(dbm, data, ...) {
+   requiresJuliaPkgBoltzmannMachines()
+   kwargs <- aisParamList(...)
+   dbm <- asRObject(dbm)
+   logz <- callWithNonNullKwargs(logpartitionfunction, list(dbm), kwargs)
+   logproblowerbound(dbm, as.matrix(asRObject(data)), logz)
+}
+
+
+bm.exactloglikelihoodDS <- function(bm, data) {
+   requiresJuliaPkgBoltzmannMachines()
+   exactloglikelihood(asRObject(bm), as.matrix(asRObject(data)))
+}

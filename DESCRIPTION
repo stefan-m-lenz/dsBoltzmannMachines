@@ -14,4 +14,7 @@ LazyData: true
 AggregateMethods: splitdataDS, samplesDS, setJuliaSeedDS,
     defineLayerDS, definePartitionedLayerDS,
     monitored_fitrbmDS, monitored_stackrbmsDS, monitored_fitdbmDS,
-    dbm2TopLatentDimsDS
+    dbm2TopLatentDimsDS, 
+    rbm.loglikelihoodDS, dbm.loglikelihoodDS, 
+    dbm.logproblowerboundDS, 
+    bm.exactloglikelihoodDS
