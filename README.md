@@ -1,6 +1,6 @@
 # dsBoltzmannMachines
 
-This is the server side R package for using Deep Boltzmann machines as generative models in [DataSHIELD](https://github.com/datashield).
+This is the server side R package for using deep Boltzmann machines as generative models in [DataSHIELD](https://github.com/datashield).
 
 The corresponding client side R package is [dsBoltzmannMachinesClient](https://github.com/stefan-m-lenz/dsBoltzmannMachinesClient).
 
