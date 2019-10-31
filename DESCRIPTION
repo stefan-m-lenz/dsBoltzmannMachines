@@ -13,7 +13,8 @@ Encoding: UTF-8
 LazyData: true
 AggregateMethods: splitdataDS, samplesDS, setJuliaSeedDS,
     bm.defineLayerDS, bm.definePartitionedLayerDS,
-    monitored_fitrbmDS, monitored_stackrbmsDS, monitored_fitdbmDS,
+    monitored_fitrbmDS, monitored_stackrbmsDS, 
+    monitored_traindbmDS, monitored_fitdbmDS,
     dbm.top2LatentDimsDS,
     rbm.loglikelihoodDS, dbm.loglikelihoodDS, 
     dbm.logproblowerboundDS, 

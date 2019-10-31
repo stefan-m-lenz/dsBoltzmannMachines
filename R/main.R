@@ -138,6 +138,34 @@ monitored_stackrbmsDS <- function(newobj,
 }
 
 
+monitored_traindbmDS <- function(startdbm = "dbm", newobj = "dbm",
+                                 data = "D",
+                                 monitoring = "logproblowerbound",
+                                 monitoringdata = data,
+                                 epochs = NULL,
+                                 nparticles = NULL,
+                                 learningrate = NULL,
+                                 learningrates = NULL) {
+
+   #tryCatch({
+   requiresJuliaPkgBoltzmannMachines()
+   dbm <- asRObject(startdbm)
+   x <- as.matrix(asRObject(data))
+   checkNumberOfSamples(x)
+
+   kwargs <- list(monitoring = asMonitoringArg(monitoring, DBM_MONITORING_OPTS),
+                  monitoringdata = asBMsDataDictOrNull(monitoringdata),
+                  epochs = asJuliaIntArgOrNull(epochs),
+                  nparticles = asJuliaIntArgOrNull(nparticles),
+                  learningrate = asJuliaFloat64ArgOrNull(learningrate),
+                  learningrates = asJuliaFloat64ArrayArgOrNull(learningrates))
+
+   trainingresult <- callWithNonNullKwargs(monitored_traindbm, list(dbm, x), kwargs)
+   return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
+   #}, error = function(e) {return(paste(e))})
+}
+
+
 monitored_fitdbmDS <- function(newobj,
                                data = "D",
                                monitoring = "logproblowerbound",
@@ -156,7 +184,7 @@ monitored_fitdbmDS <- function(newobj,
 
    requiresJuliaPkgBoltzmannMachines()
 
-   #tryCatch({
+
    x <- as.matrix(asRObject(data))
    checkNumberOfSamples(x)
 
@@ -176,7 +204,6 @@ monitored_fitdbmDS <- function(newobj,
 
    trainingresult <- callWithNonNullKwargs(monitored_fitdbm, x, kwargs)
    return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
-   #}, error = function(e) {return(paste(e))})
 }
 
 
