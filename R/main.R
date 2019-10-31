@@ -180,19 +180,19 @@ monitored_fitdbmDS <- function(newobj,
 }
 
 
-defineLayerDS <- function(newobj, epochs = NULL,
-                          learningrate = NULL,
-                          learningrates = NULL,
-                          sdlearningrate = NULL,
-                          sdlearningrates = NULL,
-                          categories = NULL,
-                          rbmtype = NULL,
-                          nhidden = NULL,
-                          nvisible = NULL,
-                          batchsize = NULL,
-                          pcd = NULL,
-                          cdsteps = NULL,
-                          startrbm = NULL) {
+bm.defineLayerDS <- function(newobj, epochs = NULL,
+                             learningrate = NULL,
+                             learningrates = NULL,
+                             sdlearningrate = NULL,
+                             sdlearningrates = NULL,
+                             categories = NULL,
+                             rbmtype = NULL,
+                             nhidden = NULL,
+                             nvisible = NULL,
+                             batchsize = NULL,
+                             pcd = NULL,
+                             cdsteps = NULL,
+                             startrbm = NULL) {
 
    requiresJuliaPkgBoltzmannMachines()
 
@@ -217,7 +217,7 @@ defineLayerDS <- function(newobj, epochs = NULL,
 }
 
 
-definePartitionedLayerDS <- function(newobj, parts) {
+bm.definePartitionedLayerDS <- function(newobj, parts) {
    parts <- asRObjectListOrNull(parts)
    if (!is.null(parts) || isempty(parts)) {
       parts <- TrainPartitionedLayer(parts)
@@ -229,7 +229,7 @@ definePartitionedLayerDS <- function(newobj, parts) {
 
 #' If there are more than two hidden nodes, perform a PCA and return only
 #' the top two principal components.
-dbm2TopLatentDimsDS <- function(dbm, data) {
+dbm.top2LatentDimsDS <- function(dbm, data) {
    mf <- meanfield(asRObject(dbm), as.matrix(asRObject(data)))
    h <- mf[[length(mf)]]
 
