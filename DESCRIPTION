@@ -4,18 +4,22 @@ Title: Server side functions for Boltzmann machines in DataSHIELD
 Version: 0.1.0.9000
 Author: Stefan Lenz
 Maintainer: Stefan Lenz <lenz@imbi.uni-freiburg.de>
-Description: The package wraps the Julia package "BoltzmannMachines" 
+Description: The package wraps the Julia package "BoltzmannMachines"
     (https://github.com/stefan-m-lenz/BoltzmannMachines.jl).
-    It allows to train and use restricted and deep Boltzmann machines in DataSHIELD. 
+    It allows to train and use restricted and deep Boltzmann machines in DataSHIELD.
 License: MIT
 Depends: JuliaConnectoR
 Encoding: UTF-8
 LazyData: true
 AggregateMethods: splitdataDS, samplesDS, setJuliaSeedDS,
     bm.defineLayerDS, bm.definePartitionedLayerDS,
-    monitored_fitrbmDS, monitored_stackrbmsDS, 
+    monitored_fitrbmDS, monitored_stackrbmsDS,
     monitored_traindbmDS, monitored_fitdbmDS,
     dbm.top2LatentDimsDS,
-    rbm.loglikelihoodDS, dbm.loglikelihoodDS, 
-    dbm.logproblowerboundDS, 
+    rbm.loglikelihoodDS, dbm.loglikelihoodDS,
+    dbm.logproblowerboundDS,
     bm.exactloglikelihoodDS
+Options: 
+    dsBoltzmannMachines.privacyLevel,
+    dsBoltzmannMachines.debug,
+    dsBoltzmannMachines.logFile

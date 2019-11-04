@@ -4,9 +4,60 @@ decodeNumVec <- function(x) {
 }
 
 
-#' Creates a call to a (Julia) function, passing only the non-null arguments as
-#' key-value arguments
-callWithNonNullKwargs <- function(fun, args = NULL, kwargs) {
+extractJuliaErrorType <- function(errorMsg) {
+   paste(regmatches(errorMsg, regexpr("[a-zA-Z0-9]*Error[a-zA-Z0-9]*", errorMsg)),
+         collapse = ", ")
+}
+
+
+logJuliaError <- function(errorMsg, funname, args, kwargs) {
+   logfile <- getOption("dsBoltzmannMachines.logFile", default = "")
+   activeDebug <- as.logical(getOption("dsBoltzmannMachines.debug", default = FALSE))
+   if (logfile != "") {
+      if (!file.exists(logfile)) {
+         file.create(logfile)
+      }
+      if (file.access(logfile, mode = 0) < 0) { # file writable
+         stop(paste0("Error while attempting to log error: Log-file\"", logfile, "\" not writable."))
+      } else {
+         if (activeDebug) {
+            logEntry <- errorMsg
+         } else { # do not always log everything to prevent patient information from getting into the log
+            getDottedJuliaType <- function(x) {
+               ret <- juliaCall("typeof", x)
+               paste0("::", ret)
+            }
+            argTypes <- lapply(args, getDottedJuliaType)
+            argTypes <- paste0(argTypes, collapse = ", ")
+            kwargsAndTypes <- paste(names(kwargs),
+                                    lapply(kwargs, getDottedJuliaType),
+                                    collapse = ", ")
+            logEntry <- paste0("Julia error: ", extractJuliaErrorType(errorMsg), " calling ",
+                               funname,
+                               "(", argTypes, "; ", kwargsAndTypes, ")")
+         }
+         write(paste0(Sys.time(), " ", logEntry), file = logfile, append = TRUE)
+      }
+   }
+}
+
+
+handleJuliaErrorAndStop <- function(e, funname, args, kwargs) {
+   errorMsg <- conditionMessage(e)
+   logJuliaError(errorMsg, funname, args, kwargs)
+   stop(paste0("Julia returned an error (", extractJuliaErrorType(errorMsg),
+               "). If logging is enabled, see details there."))
+}
+
+
+#' Calls a wrapped Julia function.
+#'
+#' Only the the arguments with non-null value in kwargs are passed as
+#' named arguments.
+#'
+#' If Julia returns an error, the error may be logged.
+#'
+doJuliaCall <- function(fun, args = NULL, kwargs = NULL) {
    if (!is.null(args) && !is.list(args)) {
       args <- list(args)
    }
@@ -14,10 +65,15 @@ callWithNonNullKwargs <- function(fun, args = NULL, kwargs) {
    # Avoid passing NULL arguments to Julia
    # Collect all the keyword arguments in the list kwargs...
    # ... to be able to filter out all the null arguments.
-   kwargs <- Filter(Negate(is.null), kwargs)
+   if (!is.null(kwargs)) {
+      kwargs <- Filter(Negate(is.null), kwargs)
+   }
+
    # Then the call can be assembled and evaluated.
    cally <- as.call(c(fun, args, kwargs))
-   return(eval(cally, envir = .GlobalEnv))
+   funname <- substitute(fun)
+   tryCatch({return(eval(cally, envir = .GlobalEnv))},
+            error = function(e) {handleJuliaErrorAndStop(e, funname, args, kwargs)})
 }
 
 
@@ -137,7 +193,7 @@ assignAndReturnMonitoredFittingResult <- function(newobj, trainingresult) {
    class(monitoringresult) <- "monitoringresult"
    model <- trainingresult[[2]]
    assign(newobj, model, envir = .GlobalEnv)
-   if (getOption("datashield.BoltzmannMachines.shareModels", default = FALSE)) {
+   if (getOption("dsBoltzmannMachines.shareModels", default = FALSE)) {
       return(list(monitoringresult, model))
    } else {
       return(monitoringresult)
@@ -146,11 +202,11 @@ assignAndReturnMonitoredFittingResult <- function(newobj, trainingresult) {
 
 
 checkNumberOfSamples <- function(x) {
-   minRequiredTrainingSamples <- getOption("datashield.BoltzmannMachines.privacyLevel", default = 20)
+   minRequiredTrainingSamples <- getOption("dsBoltzmannMachines.privacyLevel", default = 20)
    if (is.character(minRequiredTrainingSamples)) {
       minRequiredTrainingSamples <- as.numeric(minRequiredTrainingSamples)
    }
    if (nrow(x) < minRequiredTrainingSamples) {
-      stop('Too few samples - see option "datashield.BoltzmannMachines.privacyLevel"')
+      stop('Too few samples - see option "dsBoltzmannMachines.privacyLevel"')
    }
 }
