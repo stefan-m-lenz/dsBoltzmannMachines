@@ -153,7 +153,6 @@ mkdir /opt/julia
 mv $JULIA_VERSION /opt/julia/$JULIA_VERSION/
 ln -s /opt/julia/$JULIA_VERSION/bin/julia /usr/local/bin/julia
 
-
 # Set JULIA_BINDIR environment variable for the rserver
 BOLTZMANN_UPDATE_CMD=$(cat << 'END'
 julia -e 'using Pkg; Pkg.add(PackageSpec(name = "BoltzmannMachines", version = "1.2"))'
@@ -162,11 +161,13 @@ END
 sudo su -s "/bin/bash" rserver -c "$BOLTZMANN_UPDATE_CMD"
 JULIA_BINDIR="/opt/julia/$JULIA_VERSION/bin/"
 echo "JULIA_BINDIR=$JULIA_BINDIR" >> /etc/environment
-printf "\nSys.setenv(JULIA_BINDIR=$JULIA_BINDIR)\n\n" >> /var/lib/rserver/conf/Rprofile.R
+printf "\nSys.setenv(JULIA_BINDIR=\"$JULIA_BINDIR\")\n\n" >> /var/lib/rserver/conf/Rprofile.R
 sudo service rserver restart
 
 
+# TODO copy files first
+R -e 'install.packages("JuliaConnectoR_0.2.0.9000.tar.gz", repos = NULL, type = "source")'
+R -e 'install.packages("dsBoltzmannMachines_0.1.0.tar.gz", repos = NULL, type = "source")'
 
-
-
-
+Rscript -e 'install.packages("opalr", repos="https://ftp.fau.de/cran/")'
+# TODO
