@@ -12,7 +12,7 @@ if (testlog) {
    juliaUsing("BoltzmannMachines")
    options("dsBoltzmannMachines.logFile" = "./test-log.log")
    options("dsBoltzmannMachines.debug" = FALSE)
-   assertError(dsBoltzmannMachines:::doJuliaCall(exactloglikelihood, list("+", "1"))
+   assertError(dsBoltzmannMachines:::doJuliaCall(exactloglikelihood, list("+", "1")))
    assertError(dsBoltzmannMachines:::doJuliaCall(exactloglikelihood, list("+", "1"), list(a = "2", b = "3")))
    length(readLines(testlogfile)) == 2
    file.remove(testlogfile)

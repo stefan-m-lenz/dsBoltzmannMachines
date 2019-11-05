@@ -20,21 +20,23 @@ logJuliaError <- function(errorMsg, funname, args, kwargs) {
       if (file.access(logfile, mode = 0) < 0) { # file writable
          stop(paste0("Error while attempting to log error: Log-file\"", logfile, "\" not writable."))
       } else {
+         getTypeInfo <- function(x) {
+            ret <- juliaCall("typeof", x)
+            rTypeInfo <- paste0("\"", c(typeof(x), class(x)), "\"")
+            rTypeInfo <- paste(rTypeInfo, collapse = "/")
+            paste0(rTypeInfo, " -> ::", ret)
+         }
+         argTypes <- lapply(args, getTypeInfo)
+         argTypes <- paste0(argTypes, collapse = ", ")
+         kwargsAndTypes <- paste(names(kwargs),
+                                 lapply(kwargs, getTypeInfo),
+                                 collapse = ", ")
+         logEntry <- paste0("Julia error: ", extractJuliaErrorType(errorMsg), " calling ",
+                            funname,
+                            "(", argTypes, "; ", kwargsAndTypes, ")")
          if (activeDebug) {
-            logEntry <- errorMsg
-         } else { # do not always log everything to prevent patient information from getting into the log
-            getDottedJuliaType <- function(x) {
-               ret <- juliaCall("typeof", x)
-               paste0("::", ret)
-            }
-            argTypes <- lapply(args, getDottedJuliaType)
-            argTypes <- paste0(argTypes, collapse = ", ")
-            kwargsAndTypes <- paste(names(kwargs),
-                                    lapply(kwargs, getDottedJuliaType),
-                                    collapse = ", ")
-            logEntry <- paste0("Julia error: ", extractJuliaErrorType(errorMsg), " calling ",
-                               funname,
-                               "(", argTypes, "; ", kwargsAndTypes, ")")
+            # log everything - this must be turned on explicitly - may contain patient information!
+            logEntry <- paste(logEntry, errorMsg, sep = " - ")
          }
          write(paste0(Sys.time(), " ", logEntry), file = logfile, append = TRUE)
       }
