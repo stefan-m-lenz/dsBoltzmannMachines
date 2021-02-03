@@ -1,4 +1,5 @@
 library(opaladmin)
+# TODO opaladmin package is deprecated. Move to opalr::install_local_package
 
 deployDSBMs <- function () {
    devtools::build()
