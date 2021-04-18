@@ -191,7 +191,7 @@ asMonitoringArg <- function(monitoring, monitoringopts) {
 
 
 assignAndReturnMonitoredFittingResult <- function(newobj, trainingresult) {
-   monitoringresult <- trainingresult[[1]]
+   monitoringresult <- juliaGet(trainingresult[[1]])
    class(monitoringresult) <- "monitoringresult"
    model <- trainingresult[[2]]
    assign(newobj, model, envir = .GlobalEnv)
