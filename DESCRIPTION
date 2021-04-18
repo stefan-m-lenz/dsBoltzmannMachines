@@ -1,7 +1,7 @@
 Package: dsBoltzmannMachines
 Type: Package
 Title: Server side functions for Boltzmann machines in DataSHIELD
-Version: 1.0.1
+Version: 2.0.0
 Author: Stefan Lenz
 Maintainer: Stefan Lenz <lenz@imbi.uni-freiburg.de>
 Description: The package wraps the Julia package "BoltzmannMachines"
@@ -11,15 +11,23 @@ License: MIT
 Depends: JuliaConnectoR
 Encoding: UTF-8
 LazyData: true
-AggregateMethods: splitdataDS, samplesDS, setJuliaSeedDS,
-    bm.defineLayerDS, bm.definePartitionedLayerDS,
-    monitored_fitrbmDS, monitored_stackrbmsDS,
-    monitored_traindbmDS, monitored_fitdbmDS,
+AggregateMethods:
+    splitdataDS,
+    samplesDS,
+    setJuliaSeedDS,
+    bm.defineLayerDS,
+    bm.definePartitionedLayerDS,
+    monitored_fitrbmDS,
+    monitored_stackrbmsDS,
+    monitored_traindbmDS,
+    monitored_fitdbmDS,
     dbm.top2LatentDimsDS,
-    rbm.loglikelihoodDS, dbm.loglikelihoodDS,
+    rbm.loglikelihoodDS,
+    dbm.loglikelihoodDS,
     dbm.logproblowerboundDS,
     bm.exactloglikelihoodDS
 Options:
-    dsBoltzmannMachines.privacyLevel,
-    dsBoltzmannMachines.debug,
-    dsBoltzmannMachines.logFile
+    dsBoltzmannMachines.privacyLevel=20,
+    dsBoltzmannMachines.debug=FALSE,
+    dsBoltzmannMachines.logFile="",
+    dsBoltzmannMachines.shareModels=FALSE

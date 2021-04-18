@@ -161,7 +161,7 @@ asBMsDataDictOrNull <- function(x) {
       monitoringdatalabels <- monitoringdata
       monitoringdata <- lapply(monitoringdata,
                                function(x) {as.matrix(asRObject(x))})
-      monitoringdata <- juliaLet("DataDict(zip(keys, values))",
+      monitoringdata <- juliaLet("BoltzmannMachines.DataDict(zip(keys, values))",
                                  keys = monitoringdatalabels,
                                  values = monitoringdata)
       return(monitoringdata)
@@ -196,7 +196,7 @@ assignAndReturnMonitoredFittingResult <- function(newobj, trainingresult) {
    model <- trainingresult[[2]]
    assign(newobj, model, envir = .GlobalEnv)
    if (getOption("dsBoltzmannMachines.shareModels", default = FALSE)) {
-      return(list(monitoringresult, model))
+      return(list(monitoringresult, juliaGet(model)))
    } else {
       return(monitoringresult)
    }

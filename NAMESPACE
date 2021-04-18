@@ -1,5 +1,6 @@
 exportPattern(".*DS")
 importFrom("JuliaConnectoR", "juliaCall")
-importFrom("JuliaConnectoR", "juliaUsing")
+importFrom("JuliaConnectoR", "juliaImport")
 importFrom("JuliaConnectoR", "juliaExpr")
 importFrom("JuliaConnectoR", "juliaLet")
+importFrom("JuliaConnectoR", "juliaGet")

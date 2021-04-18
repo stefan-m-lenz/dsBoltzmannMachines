@@ -1,10 +1,10 @@
 
 # allows lazy connection to Julia
-pkgLocal <- new.env(parent = emptyenv())
 requiresJuliaPkgBoltzmannMachines <- function() {
-   if (is.null(pkgLocal$BoltzmannMachinesLoaded)) {
-      juliaUsing("BoltzmannMachines")
-      pkgLocal$BoltzmannMachinesLoaded <- TRUE
+   if (!exists("BMs")) {
+      BMs <- juliaImport("BoltzmannMachines")
+      # assign variable to the package environment
+      assign("BMs", BMs, envir = parent.env(environment()))
    }
 }
 
@@ -52,14 +52,14 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
                   rbmtype = asRObjectOrNull(rbmtype),
                   startrbm = asRObjectOrNull(startrbm))
 
-   trainingresult <- doJuliaCall(monitored_fitrbm, x, kwargs)
+   trainingresult <- doJuliaCall(BMs$monitored_fitrbm, x, kwargs)
    return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
 }
 
 
 splitdataDS <- function(data, ratio, newobj1, newobj2) {
    requiresJuliaPkgBoltzmannMachines()
-   d1_d2 <- splitdata(as.matrix(asRObject(data)), as.numeric(ratio))
+   d1_d2 <- BMs$splitdata(as.matrix(asRObject(data)), as.numeric(ratio))
    assign(newobj1, d1_d2[[1]], envir = .GlobalEnv)
    assign(newobj2, d1_d2[[2]], envir = .GlobalEnv)
    return()
@@ -102,7 +102,7 @@ samplesDS <- function(bm, nsamples,
                   conditions = conditions,
                   samplelast = samplelast)
 
-   return(doJuliaCall(samples, list(bm, nsamples), kwargs))
+   return(doJuliaCall(BMs$samples, list(bm, nsamples), kwargs))
 }
 
 
@@ -133,7 +133,7 @@ monitored_stackrbmsDS <- function(newobj,
                   batchsize = asJuliaIntArgOrNull(batchsize),
                   trainlayers = asRObjectListOrNull(trainlayers))
 
-   trainingresult <- doJuliaCall(monitored_stackrbms, x, kwargs)
+   trainingresult <- doJuliaCall(BMs$monitored_stackrbms, x, kwargs)
    return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
 }
 
@@ -160,7 +160,7 @@ monitored_traindbmDS <- function(startdbm = "dbm", newobj = "dbm",
                   learningrate = asJuliaFloat64ArgOrNull(learningrate),
                   learningrates = asJuliaFloat64ArrayArgOrNull(learningrates))
 
-   trainingresult <- doJuliaCall(monitored_traindbm, list(dbm, x), kwargs)
+   trainingresult <- doJuliaCall(BMs$monitored_traindbm, list(dbm, x), kwargs)
    return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
    #}, error = function(e) {return(paste(e))})
 }
@@ -202,7 +202,7 @@ monitored_fitdbmDS <- function(newobj,
                   batchsizepretraining = asJuliaIntArgOrNull(batchsizepretraining),
                   pretraining = asRObjectListOrNull(pretraining))
 
-   trainingresult <- doJuliaCall(monitored_fitdbm, x, kwargs)
+   trainingresult <- doJuliaCall(BMs$monitored_fitdbm, x, kwargs)
    return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
 }
 
@@ -237,7 +237,7 @@ bm.defineLayerDS <- function(newobj, epochs = NULL,
                   cdsteps = asJuliaIntArgOrNull(cdsteps),
                   startrbm = asRObjectOrNull(startrbm))
 
-   t <- doJuliaCall(TrainLayer, kwargs = kwargs)
+   t <- doJuliaCall(BMs$TrainLayer, kwargs = kwargs)
    assign(newobj, t, envir = .GlobalEnv)
 
    return()
@@ -247,7 +247,7 @@ bm.defineLayerDS <- function(newobj, epochs = NULL,
 bm.definePartitionedLayerDS <- function(newobj, parts) {
    parts <- asRObjectListOrNull(parts)
    if (!is.null(parts) || isempty(parts)) {
-      parts <- doJuliaCall(TrainPartitionedLayer, list(parts))
+      parts <- doJuliaCall(BMs$TrainPartitionedLayer, list(parts))
    }
    assign(newobj, parts, envir = .GlobalEnv)
    return()
@@ -257,7 +257,7 @@ bm.definePartitionedLayerDS <- function(newobj, parts) {
 #' If there are more than two hidden nodes, perform a PCA and return only
 #' the top two principal components.
 dbm.top2LatentDimsDS <- function(dbm, data) {
-   mf <- doJuliaCall(meanfield, list(asRObject(dbm), as.matrix(asRObject(data))))
+   mf <- doJuliaCall(BMs$meanfield, list(asRObject(dbm), as.matrix(asRObject(data))))
    h <- mf[[length(mf)]]
 
    # logit transform
@@ -290,15 +290,15 @@ rbm.loglikelihoodDS <- function(rbm, data, ...) {
    requiresJuliaPkgBoltzmannMachines()
    kwargs <- aisParamList(...)
    rbm <- asRObject(rbm)
-   logz <- doJuliaCall(logpartitionfunction, list(rbm), kwargs)
-   doJuliaCall(loglikelihood, list(rbm, as.matrix(asRObject(data)), logz))
+   logz <- doJuliaCall(BMs$logpartitionfunction, list(rbm), kwargs)
+   doJuliaCall(BMs$loglikelihood, list(rbm, as.matrix(asRObject(data)), logz))
 }
 
 
 dbm.loglikelihoodDS <- function(dbm, data, ...) {
    requiresJuliaPkgBoltzmannMachines()
    kwargs <- aisParamList(...)
-   doJuliaCall(loglikelihood, list(asRObject(dbm), as.matrix(asRObject(data))), kwargs)
+   doJuliaCall(BMs$loglikelihood, list(asRObject(dbm), as.matrix(asRObject(data))), kwargs)
 }
 
 
@@ -306,12 +306,12 @@ dbm.logproblowerboundDS <- function(dbm, data, ...) {
    requiresJuliaPkgBoltzmannMachines()
    kwargs <- aisParamList(...)
    dbm <- asRObject(dbm)
-   logz <- doJuliaCall(logpartitionfunction, list(dbm), kwargs)
-   doJuliaCall(logproblowerbound, list(dbm, as.matrix(asRObject(data)), logz))
+   logz <- doJuliaCall(BMs$logpartitionfunction, list(dbm), kwargs)
+   doJuliaCall(BMs$logproblowerbound, list(dbm, as.matrix(asRObject(data)), logz))
 }
 
 
 bm.exactloglikelihoodDS <- function(bm, data) {
    requiresJuliaPkgBoltzmannMachines()
-   doJuliaCall(exactloglikelihood, list(asRObject(bm), as.matrix(asRObject(data))))
+   doJuliaCall(BMs$exactloglikelihood, list(asRObject(bm), as.matrix(asRObject(data))))
 }
