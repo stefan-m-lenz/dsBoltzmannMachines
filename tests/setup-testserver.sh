@@ -139,11 +139,6 @@ sudo service rserver restart
 # Root-Zugang per SSH:
 # https://wiki.linuxmuster.net/community/anwenderwiki:ssh:ssh-keys
 
-# spezifisch für JuliaConnectoR
-
-#echo 'JULIASERVER_SOCKET_ADDRESS="localhost:11980"' >> /etc/environment
-#printf "\nSys.setenv(JULIASERVER_SOCKET_ADDRESS=\"localhost:11980\")\n\n" >> /var/lib/rserver/conf/Rprofile.R
-
 # Install Julia
 JULIA_VERSION=julia-1.0.4
 wget https://julialang-s3.julialang.org/bin/linux/x64/1.0/$JULIA_VERSION-linux-x86_64.tar.gz
@@ -165,9 +160,8 @@ printf "\nSys.setenv(JULIA_BINDIR=\"$JULIA_BINDIR\")\n\n" >> /var/lib/rserver/co
 sudo service rserver restart
 
 
-# TODO copy files first
+# (Files need to be copied first)
 R -e 'install.packages("JuliaConnectoR_0.2.0.9000.tar.gz", repos = NULL, type = "source")'
 R -e 'install.packages("dsBoltzmannMachines_0.1.0.tar.gz", repos = NULL, type = "source")'
 
 Rscript -e 'install.packages("opalr", repos="https://ftp.fau.de/cran/")'
-# TODO
