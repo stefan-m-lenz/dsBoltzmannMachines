@@ -124,11 +124,24 @@ asJuliaBoolArgOrNull <- function(x) {
 }
 
 
+ensureIsVariableName <- function(x) {
+   if (!grepl("[[:alpha:]._]", x)) {
+      stop(paste0("\"", x, "\" is not a valid variable name"))
+   }
+}
+
+
+getRObjectFromName <- function(x) {
+   ensureIsVariableName(x)
+   return(eval(parse(text = x), envir = .GlobalEnv))
+}
+
+
 asRObject <- function(x) {
    if (is.null(x)) {
       stop("Name of variable is not allowed to be NULL.")
    } else {
-      return(eval(parse(text = x), envir = .GlobalEnv))
+      return(getRObjectFromName(x))
    }
 }
 
@@ -137,7 +150,20 @@ asRObjectOrNull <- function(x) {
    if (is.null(x)) {
       return(NULL)
    } else {
-      return(eval(parse(text = x), envir = .GlobalEnv))
+      return(getRObjectFromName(x))
+   }
+}
+
+
+asRBMTypeOrNull <- function(x) {
+   if (is.null(x)) {
+      return(NULL)
+   } else {
+      ensureIsVariableName(x)
+      if (!grepl("^BoltzmannMachines\\.", x)) {
+         x <- paste0("BoltzmannMachines.", x)
+      }
+      return(juliaEval(x))
    }
 }
 

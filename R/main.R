@@ -49,7 +49,7 @@ monitored_fitrbmDS <- function(newobj = 'rbm',
                   cdsteps = asJuliaIntArgOrNull(cdsteps),
                   categories = asJuliaIntArrayArgOrNull(categories),
                   batchsize = asJuliaIntArgOrNull(batchsize),
-                  rbmtype = asRObjectOrNull(rbmtype),
+                  rbmtype = asRBMTypeOrNull(rbmtype),
                   startrbm = asRObjectOrNull(startrbm))
 
    trainingresult <- doJuliaCall(pkgLocal$BMs$monitored_fitrbm, x, kwargs)
@@ -160,7 +160,7 @@ monitored_traindbmDS <- function(startdbm = "dbm", newobj = "dbm",
                   learningrate = asJuliaFloat64ArgOrNull(learningrate),
                   learningrates = asJuliaFloat64ArrayArgOrNull(learningrates))
 
-   trainingresult <- doJuliaCall(pkgLocal$BMs$monitored_traindbm, list(dbm, x), kwargs)
+   trainingresult <- doJuliaCall(pkgLocal$BMs$`monitored_traindbm!`, list(dbm, x), kwargs)
    return(assignAndReturnMonitoredFittingResult(newobj, trainingresult))
    #}, error = function(e) {return(paste(e))})
 }
@@ -229,7 +229,7 @@ bm.defineLayerDS <- function(newobj, epochs = NULL,
                   sdlearningrate = asJuliaFloat64ArgOrNull(sdlearningrate),
                   sdlearningrates = asJuliaFloat64ArrayArgOrNull(sdlearningrates),
                   categories = asJuliaIntArrayArgOrNull(categories),
-                  rbmtype = asRObjectOrNull(rbmtype),
+                  rbmtype = asRBMTypeOrNull(rbmtype),
                   nhidden = asJuliaIntArgOrNull(nhidden),
                   nvisible = asJuliaIntArgOrNull(nvisible),
                   batchsize = asJuliaIntArgOrNull(batchsize),
