@@ -1,7 +1,7 @@
 Package: dsBoltzmannMachines
 Type: Package
 Title: Server side functions for Boltzmann machines in DataSHIELD
-Version: 2.0.0
+Version: 1.0.2
 Author: Stefan Lenz
 Maintainer: Stefan Lenz <lenz@imbi.uni-freiburg.de>
 Description: The package wraps the Julia package "BoltzmannMachines"
